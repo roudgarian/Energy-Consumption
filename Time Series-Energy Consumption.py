@@ -220,7 +220,6 @@ plt.show()
 # In[]:
 
 
-fig, ax =plt.subplots(1)
 day01.Sub_metering_1.plot(legend=True)
 day01.Sub_metering_2.plot(legend=True)
 day01.Sub_metering_3.plot(legend=True)
@@ -244,7 +243,6 @@ plt.show()
 # In[]:
 
 
-fig, ax =plt.subplots(1)
 day02.Sub_metering_1.plot(legend=True)
 day02.Sub_metering_2.plot(legend=True)
 day02.Sub_metering_3.plot(legend=True)
