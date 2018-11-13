@@ -50,18 +50,18 @@ data.Global_active_power=(data.Global_active_power*1000)/60
 
 data["Unmetered"]= data.Global_active_power - data.Sub_metering_1 - data.Sub_metering_2 - data.Sub_metering_3
 
-decimals = pd.arima_Series([2,2,2], index=['Global_active_power','Global_reactive_power', 'Unmetered'])
-data.round(decimals)
+#decimals = pd.series([2,2,2], index=['Global_active_power','Global_reactive_power', 'Unmetered'])
+#data.round(decimals)
 
 
-data.to_csv('Power_consumption_Preprocessed.csv')
+#data.to_csv('Power_consumption_Preprocessed.csv')
 
 
 # # Investigation and Visualization
 
 #checkpoint to back here without doing data-preprocess step
-data = read_csv('Power_consumption_Preprocessed.csv', header=0,
-                infer_datetime_format=True, parse_dates=['DateTime'], index_col=['DateTime'])
+#data = read_csv('Power_consumption_Preprocessed.csv', header=0,
+#                infer_datetime_format=True, parse_dates=['DateTime'], index_col=['DateTime'])
 
 
 data.Global_active_power.resample('Y').sum().plot(color='#B40431', legend=True,figsize=(8, 5))
@@ -157,7 +157,7 @@ fig = decomposition.plot()
 plt.show()
 
 
-dataset['Global_active_power']=dataset['Global_active_power']*0.06
+data['Global_active_power']=data['Global_active_power']*0.06
 arima_Series= data['Global_active_power'].resample('M').mean()
 
 
@@ -184,8 +184,8 @@ for param in pdq:
                                              enforce_invertibility=False)
              results = model.fit()
              print('ARIMA{}x{}12 - AIC:{}'.format(param, param_seasonal, results.aic))
-         except:
-             continue
+        except:
+                 continue
 
 ###Model ARIMA with (7,1,1)
 
