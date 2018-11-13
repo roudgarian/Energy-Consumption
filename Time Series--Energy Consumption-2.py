@@ -50,7 +50,7 @@ data.Global_active_power=(data.Global_active_power*1000)/60
 
 data["Unmetered"]= data.Global_active_power - data.Sub_metering_1 - data.Sub_metering_2 - data.Sub_metering_3
 
-decimals = pd.Series([2,2,2], index=['Global_active_power','Global_reactive_power', 'Unmetered'])
+decimals = pd.arima_Series([2,2,2], index=['Global_active_power','Global_reactive_power', 'Unmetered'])
 data.round(decimals)
 
 
@@ -151,14 +151,14 @@ plt.show()
 
 ##Decomposition
 
-Series= data['Global_active_power'].resample('W').mean()
-decomposition = sm.tsa.seasonal_decompose(Series,freq=50, model='additive')
+arima_Series= data['Global_active_power'].resample('W').mean()
+decomposition = sm.tsa.seasonal_decompose(arima_Series,freq=50, model='additive')
 fig = decomposition.plot()
 plt.show()
 
 
 dataset['Global_active_power']=dataset['Global_active_power']*0.06
-
+arima_Series= data['Global_active_power'].resample('M').mean()
 
 
 ### Find ARIMA parameteres p,d,q
@@ -177,7 +177,7 @@ print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[4]))
 for param in pdq:
      for param_seasonal in seasonal_pdq:
         try:
-             model = sm.tsa.statespace.SARIMAX(Series,
+             model = sm.tsa.statespace.SARIMAX(arima_Series,
                                              order=param,
                                              seasonal_order=param_seasonal,
                                              enforce_stationarity=False,
@@ -189,7 +189,7 @@ for param in pdq:
 
 ###Model ARIMA with (7,1,1)
 
-model = sm.tsa.statespace.SARIMAX(Series,
+model = sm.tsa.statespace.SARIMAX(arima_Series,
                                 order=(7, 1, 1),
                                 seasonal_order=(2, 1, 0, 12),
                                 enforce_stationarity=False,
@@ -205,7 +205,7 @@ print(results.summary().tables[1])
 
 pred = results.get_prediction(start=pd.to_datetime('2009-12-31'), dynamic=False)
 pred_ci = pred.conf_int()
-ax = Series['2007':].plot(label='observed')
+ax = arima_Series['2007':].plot(label='observed')
 pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.7, figsize=(14, 7))
 ax.fill_between(pred_ci.index,
                 pred_ci.iloc[:, 0],
@@ -216,9 +216,9 @@ ax.set_ylabel('Average Global Active Power')
 plt.legend()
 
 ###MSE  
-Series_forecasted = pred.predicted_mean
-Series_truth = Series['2006-12-31':]
-mse = ((Series_forecasted - Series_truth) ** 2).mean()
+arima_Series_forecasted = pred.predicted_mean
+arima_Series_truth = arima_Series['2006-12-31':]
+mse = ((arima_Series_forecasted - arima_Series_truth) ** 2).mean()
 print('The Mean Squared Error of our forecasts is {}'.format(round(mse, 2)))
 
 ### RMSE
@@ -230,7 +230,7 @@ print('The Root Mean Squared Error of our forecasts is {}'.format(round(np.sqrt(
 
 pred_uc = results.get_forecast(steps=70)
 pred_ci = pred_uc.conf_int()
-ax = Series.plot(label='observed', figsize=(14, 5))
+ax = arima_Series.plot(label='observed', figsize=(14, 5))
 pred_uc.predicted_mean.plot(ax=ax, label='Forecast')
 ax.fill_between(pred_ci.index,
                 pred_ci.iloc[:, 0],
