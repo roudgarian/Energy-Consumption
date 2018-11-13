@@ -151,8 +151,8 @@ plt.show()
 
 ##Decomposition
 
-arima_Series= data['Global_active_power'].resample('W').mean()
-decomposition = sm.tsa.seasonal_decompose(arima_Series,freq=50, model='additive')
+Series= data['Global_active_power'].resample('W').mean()
+decomposition = sm.tsa.seasonal_decompose(Series,freq=50, model='additive')
 fig = decomposition.plot()
 plt.show()
 
