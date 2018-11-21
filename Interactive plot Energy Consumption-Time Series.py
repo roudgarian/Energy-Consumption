@@ -1,12 +1,14 @@
-
+#!/usr/bin/env python
 # coding: utf-8
-
 
 
 
 import plotly.plotly as py
 import plotly.graph_objs as go 
 import plotly
+import IPython
+from pylab import rcParams
+#rcParams['figure.figsize'] = 18, 8
 plotly.tools.set_credentials_file(username='', api_key='')
 from datetime import datetime
 import pandas_datareader.data as web
@@ -31,6 +33,76 @@ from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.arima_model import ARIMA
 from math import sqrt
 from plotly import tools
+from IPython.display import Image
+from IPython.display import IFrame
+import warnings
+from IPython.display import HTML
+from traitlets.config.manager import BaseJSONConfigManager
+from IPython.core.display import display,HTML
+
+
+
+
+
+display(HTML("<style>.container { width:100% !important; }</style>"))
+
+
+# path = "C:/Users/Saeed/AppData/Roaming/Python/etc/jupyter"
+# cm = BaseJSONConfigManager(config_dir=path)
+# cm.update("livereveal", {
+#               "transition": "zoom",
+#     "width": 1280,
+#     "height": 960,
+#               "start_slideshow_at": "selected",
+# })
+
+
+
+
+HTML('''<script>
+code_show=true; 
+function code_toggle() {
+ if (code_show){
+ $('div.input').hide();
+ } else {
+ $('div.input').show();
+ }
+ code_show = !code_show
+} 
+$( document ).ready(code_toggle);
+</script>
+<form action="javascript:code_toggle()"><input type="submit" value="Click here to toggle on/off the raw code."></form>''')
+
+
+
+
+
+#display(HTML('<style>.prompt{width: 0px; min-width: 0px; visibility: collapse}</style>'))#disable
+#display(HTML('<style>.prompt{width: 0px; min-width: 0px}</style>'))#enable
+
+
+
+
+warnings.filterwarnings("ignore") 
+
+
+# # Power Consumtion Exploratory Analysis
+# ###### Powered By:
+
+
+
+Image(filename='jupyter-icon.jpg') 
+
+
+# ##Saeed Roudgarian
+# 
+# ###20.11.2018
+
+
+
+
+Image(filename='Process.png')
+
 
 
 
@@ -41,7 +113,6 @@ data= pd.read_table('household_power_consumption.txt', sep=';',
 
 
 # # preprocessing
-
 
 
 
@@ -99,16 +170,21 @@ data.to_csv('Power_consumption_Preprocessed.csv')
 
 
 
-
 #checkpoint to back here without doing data-preprocess step
-data = read_csv('Power_consumption_Preprocessed.csv', header=0,
+data_df = read_csv('Power_consumption_Preprocessed.csv', header=0,
                 infer_datetime_format=True, parse_dates=['DateTime'], index_col=['DateTime'])
 
 
 
 
 
-df=data.resample('M').mean()
+data_df=data_df['2007-01-01':'2010-12-26']
+
+
+
+
+
+df=data_df.resample('M').mean()
 
 
 
@@ -122,10 +198,12 @@ trace_gap = go.Scatter(x=list(df.index),
 
 
 
+
 trace_sub1 = go.Scatter(x=list(df.index),
                        y=list(df.Sub_metering_1),
                        name='Kitchen',
                        line=dict(color='#2d7f5e'))
+
 
 
 
@@ -141,8 +219,10 @@ trace_sub2 = go.Scatter(x=list(df.index),
 
 trace_sub3 = go.Scatter(x=list(df.index),
                        y=list(df.Sub_metering_3),
-                       name='Heating_AC',
+                       name='W.Heater_AC',
                        line=dict(color='#FFBF00'))
+
+
 
 
 
@@ -154,7 +234,9 @@ trace_sub4 = go.Scatter(x=list(df.index),
 
 
 
+
 data = [trace_gap, trace_sub1, trace_sub2, trace_sub3, trace_sub4 ]
+
 
 
 
@@ -167,11 +249,14 @@ gap_annotations=[dict(x=df.Global_active_power.idxmax(),
 
 
 
+
+
 sub1_annotations=[dict(x=df.Sub_metering_1.idxmax(),
                        y=df.Sub_metering_1.max(),
                        xref='x', yref='y',
                        text='Max:<br>'+str(df.Sub_metering_1.max()),
                        ax=0, ay=-40)]
+
 
 
 
@@ -183,6 +268,8 @@ sub2_annotations=[dict(x=df.Sub_metering_2.idxmax(),
 
 
 
+
+
 sub3_annotations=[dict(x=df.Sub_metering_3.idxmax(),
                        y=df.Sub_metering_3.max(),
                        xref='x', yref='y',
@@ -191,11 +278,15 @@ sub3_annotations=[dict(x=df.Sub_metering_3.idxmax(),
 
 
 
+
+
 sub4_annotations=[dict(x=df.Unmetered.idxmax(),
                        y=df.Unmetered.max(),
                        xref='x', yref='y',
                        text='Max:<br>'+str(df.Unmetered.max()),
                        ax=0, ay=40)]
+
+
 
 
 
@@ -217,10 +308,10 @@ updatemenus = list([
                  args = [{'visible': [False, False, True, False, False, False]},
                          {'title': 'Laundry Room',
                           'annotations': sub2_annotations}]),
-            dict(label = 'Heating_AC',
+            dict(label = 'W.Heater_AC',
                  method = 'update',
                  args = [{'visible': [False, False, False, True, False, False]},
-                         {'title': 'Heating_AC',
+                         {'title': 'Electrical Water Heater and an AC',
                           'annotations': sub3_annotations}]),
             dict(label = 'Unmetered',
                  method = 'update',
@@ -230,7 +321,7 @@ updatemenus = list([
              dict(label = 'All',
                  method = 'update',
                  args = [{'visible': [True, True, True, True, True, True]},
-                         {'title': 'All Attribude',
+                         {'title': 'Average monthly energy consumption',
                           'annotations': gap_annotations+sub1_annotations+sub2_annotations+sub3_annotations+sub4_annotations}])
         ]),
     )
@@ -238,22 +329,33 @@ updatemenus = list([
 
 
 
-layout = dict(title='Energy Consumption',height=700, width=1000, showlegend=False,
+
+layout = dict(title='Average monthly energy consumption', showlegend= False,height=650, width=800,
               updatemenus=updatemenus)
 
 
 
+
+
 fig = dict(data=data, layout=layout)
-py.iplot(fig, filename='update_dropdown')
+py.iplot(fig, name=('Energy'))
 
 
-week_min=data['2008-08-18':'2008-08-24']
-day_min=data['2008-08-23':'2008-08-23']
-week_max=data['2007-12-24':'2007-12-30']
-day_max=data['2007-12-28':'2007-12-28']
+
+
+
+week_min=data_df['2008-08-18':'2008-08-24']
+#day_min=data_df['2008-08-23':'2008-08-23']
+week_max=data_df['2007-12-24':'2007-12-30']
+#day_max=data_df['2007-12-28':'2007-12-28']
+
+
+
 
 
 week_max=week_max.resample('h').mean()
+
+
 
 
 
@@ -267,6 +369,8 @@ trace_gap = go.Scatter(x=list(week_max.index),
 
 
 
+
+
 trace_sub1 = go.Scatter(x=list(week_max.index),
                        y=list(week_max.Sub_metering_1),
                        name='Kitchen',
@@ -274,6 +378,9 @@ trace_sub1 = go.Scatter(x=list(week_max.index),
                        legendgroup= 'group2',
                        showlegend= True,
                       visible ='legendonly')
+
+
+
 
 
 trace_sub2 = go.Scatter(x=list(week_max.index),
@@ -286,13 +393,17 @@ trace_sub2 = go.Scatter(x=list(week_max.index),
 
 
 
+
+
 trace_sub3 = go.Scatter(x=list(week_max.index),
                        y=list(week_max.Sub_metering_3),
-                       name='Heating_AC',
+                       name='W.Heater_AC',
                        line=dict(color='#FFBF00'),
                        legendgroup= 'group4',
                        showlegend= True,
                       visible ='legendonly')
+
+
 
 
 
@@ -302,72 +413,6 @@ trace_sub4 = go.Scatter(x=list(week_max.index),
                        line=dict(color='#3A2F0B'),
                        legendgroup= 'group5',
                        showlegend= True,
-                      visible ='legendonly')
-
-
-
-
-
-day_max=day_max.resample('h').mean()
-
-
-
-
-
-trace2_gap = go.Scatter(x=list(day_max.index),
-                       y=list(day_max.Global_active_power),
-                        legendgroup= 'group1',
-                          name='GAP',
-                          line=dict(color='#B40431'),
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace2_sub1 = go.Scatter(x=list(day_max.index),
-                       y=list(day_max.Sub_metering_1),
-                       name='Kitchen',
-                       line=dict(color='#2d7f5e'),
-                       legendgroup= 'group2',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace2_sub2 = go.Scatter(x=list(day_max.index),
-                       y=list(day_max.Sub_metering_2),
-                       name='Laundry.R',
-                       line=dict(color='#0080FF'),
-                       legendgroup= 'group3',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace2_sub3 = go.Scatter(x=list(day_max.index),
-                       y=list(day_max.Sub_metering_3),
-                       name='Heating_AC',
-                       line=dict(color='#FFBF00'),
-                       legendgroup= 'group4',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace2_sub4 = go.Scatter(x=list(day_max.index),
-                       y=list(day_max.Unmetered),
-                       name='Unmetered',
-                       line=dict(color='#3A2F0B'),
-                       legendgroup= 'group5',
-                       showlegend= False,
                       visible ='legendonly')
 
 
@@ -418,7 +463,7 @@ trace3_sub2 = go.Scatter(x=list(week_min.index),
 
 trace3_sub3 = go.Scatter(x=list(week_min.index),
                        y=list(week_min.Sub_metering_3),
-                       name='Heating_AC',
+                       name='W.Heater_AC',
                        line=dict(color='#FFBF00'),
                        legendgroup= 'group4',
                        showlegend= False,
@@ -440,77 +485,9 @@ trace3_sub4 = go.Scatter(x=list(week_min.index),
 
 
 
-day_min=day_min.resample('h').mean()
-
-
-
-
-
-trace4_gap = go.Scatter(x=list(day_min.index),
-                       y=list(day_min.Global_active_power),
-                        legendgroup= 'group1',
-                          name='GAP',
-                          line=dict(color='#B40431'),
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace4_sub1 = go.Scatter(x=list(day_min.index),
-                       y=list(day_min.Sub_metering_1),
-                       name='Kitchen',
-                       line=dict(color='#2d7f5e'),
-                       legendgroup= 'group2',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace4_sub2 = go.Scatter(x=list(day_min.index),
-                       y=list(day_min.Sub_metering_2),
-                       name='Laundry.R',
-                       line=dict(color='#0080FF'),
-                       legendgroup= 'group3',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace4_sub3 = go.Scatter(x=list(day_min.index),
-                       y=list(day_min.Sub_metering_3),
-                       name='Heating_AC',
-                       line=dict(color='#FFBF00'),
-                       legendgroup= 'group4',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-trace4_sub4 = go.Scatter(x=list(day_min.index),
-                       y=list(day_min.Unmetered),
-                       name='Unmetered',
-                       line=dict(color='#3A2F0B'),
-                       legendgroup= 'group5',
-                       showlegend= False,
-                      visible ='legendonly')
-
-
-
-
-
-fig = tools.make_subplots(rows=2, cols=2,
+fig = tools.make_subplots(rows=2, cols=1,
                           subplot_titles=('High Energy Consumption Week(Dec Last Week )',
-                                          'High Energy Consumption Day',
-                                                          'Low Energy Consumption Week(Aug 3th Week)',
-                                          'Low Energy Consumption Day'))
+                                          'Low Energy Consumption Week(Aug 3th Week)'))
 
 
 
@@ -521,52 +498,39 @@ fig.append_trace(trace_sub1, 1, 1)
 fig.append_trace(trace_sub2, 1, 1)
 fig.append_trace(trace_sub3, 1, 1)
 fig.append_trace(trace_sub4, 1, 1)
-fig.append_trace(trace2_gap, 1, 2)
-fig.append_trace(trace2_sub1, 1, 2)
-fig.append_trace(trace2_sub2, 1, 2)
-fig.append_trace(trace2_sub3, 1, 2)
-fig.append_trace(trace2_sub4, 1, 2)
 fig.append_trace(trace3_gap, 2, 1)
 fig.append_trace(trace3_sub1, 2, 1)
 fig.append_trace(trace3_sub2, 2, 1)
 fig.append_trace(trace3_sub3, 2, 1)
 fig.append_trace(trace3_sub4, 2, 1)
-fig.append_trace(trace4_gap, 2, 2)
-fig.append_trace(trace4_sub1, 2, 2)
-fig.append_trace(trace4_sub2, 2, 2)
-fig.append_trace(trace4_sub3, 2, 2)
-fig.append_trace(trace4_sub4, 2, 2)
 
 
 
 
 
-fig['layout'].update(height=700, width=800, title='Multiple Subplots' +
-                                                  ' with Titles')
+fig['layout'].update(height=680, width=750)
+py.iplot(fig)
+
+
+# ###### Time Series Decomposition
 
 
 
 
-
-py.iplot(fig, filename='make-subplots-multiple-with-titles')
-
-
-
-
-
-Series= data['Global_active_power'].resample('W').mean()
+rcParams['figure.figsize'] = 13, 8
+Series= data_df['Global_active_power'].resample('W').mean()
 decomposition = sm.tsa.seasonal_decompose(Series,freq=50, model='additive')
 fig = decomposition.plot()
-#plt.savefig('Trend-Seasonal.png', dpi = 1200)
-#print(decomposition.trend)
-#print(decomposition.seasonal)
-#print(decomposition.resid)
-#print(decomposition.observed)
-plt.show()
 
 
-# # Training and Test Set
+# ###### The plot clearly shows that the energy consumption is unstable, along with its obvious seasonality.
 
+# ## Forcasting the Time Series
+
+# ##### ARIMA method (Autoregressive Integrated Moving Average)
+
+# ##### With parameter combinations for Seasonal ARIMA(p,d,q):
+# ##### SARIMAX: (7, 1, 1) x (2, 1, 0, 12)
 
 
 
@@ -577,7 +541,7 @@ dataset = read_csv('Power_consumption_Preprocessed.csv',
 
 
 
-dataset['Global_active_power']=dataset['Global_active_power']*0.06
+#dataset['Global_active_power']=dataset['Global_active_power']*0.06
 
 
 
@@ -600,29 +564,24 @@ print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[3]))
 print('SARIMAX: {} x {}'.format(pdq[2], seasonal_pdq[4]))
 
 
-
-
-
-for param in pdq:
-    for param_seasonal in seasonal_pdq:
-        try:
-            model = sm.tsa.statespace.SARIMAX(arima_Series,
-                                            order=param,
-                                            seasonal_order=param_seasonal,
-                                            enforce_stationarity=False,
-                                            enforce_invertibility=False)
-            results = model.fit()
-            print('ARIMA{}x{}12 - AIC:{}'.format(param, param_seasonal, results.aic))
-        except:
-            continue
-
-
+# for param in pdq:
+#     for param_seasonal in seasonal_pdq:
+#         try:
+#             model = sm.tsa.statespace.SARIMAX(arima_Series,
+#                                             order=param,
+#                                             seasonal_order=param_seasonal,
+#                                             enforce_stationarity=False,
+#                                             enforce_invertibility=False)
+#             results = model.fit()
+#             print('ARIMA{}x{}12 - AIC:{}'.format(param, param_seasonal, results.aic))
+#         except:
+#             continue
 
 
 
 model = sm.tsa.statespace.SARIMAX(arima_Series,
-                                order=(7, 1, 1),
-                                seasonal_order=(2, 1, 0, 12),
+                                order=(3, 0, 1),
+                                seasonal_order=(2, 0, 0, 12),
                                 enforce_stationarity=False,
                                 enforce_invertibility=False)
 results = model.fit()
@@ -632,21 +591,30 @@ print(results.summary().tables[1])
 # results.plot_diagnostics(figsize=(16, 8),lags=10)
 # plt.show()
 
+# #### Validating forecast
+# ###### understand the accuracy
+# ###### compare predicted consumed engery to real energy consumption
+
 
 
 
 pred = results.get_prediction(start=pd.to_datetime('2009-12-31'), dynamic=False)
 pred_ci = pred.conf_int()
-ax = arima_Series['2007':].plot(label='observed')
-pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.7, figsize=(14, 7))
+ax = arima_Series['2006':].plot(label='observed')
+pred.predicted_mean.plot(ax=ax, label='One-step ahead Forecast', alpha=.9, figsize=(16, 6))
 ax.fill_between(pred_ci.index,
                 pred_ci.iloc[:, 0],
                 pred_ci.iloc[:, 1], color='k', alpha=0.25)
 ax.set_xlabel('Date')
 ax.set_ylabel('Average Global Active Power')
-plt.savefig('Validating forecasts.png', dpi = 1200)
+plt.grid(color='gray', linestyle='--', linewidth=0.3)
 plt.legend()
+plt.show()
 
+
+# ###### our forecasts align with the true values well , it starts from the beginning of the year and captured the seasonality toward the end of the year
+
+# #### Producing and visualizing forecasts
 
 
 
@@ -666,17 +634,38 @@ print('The Root Mean Squared Error of our forecasts is {}'.format(round(np.sqrt(
 
 
 
-pred_uc = results.get_forecast(steps=100)
+pred_uc = results.get_forecast(steps=50)
 pred_ci = pred_uc.conf_int()
-ax = arima_Series.plot(label='observed', figsize=(14, 5))
+ax = arima_Series.plot(label='observed', figsize=(16, 6))
 pred_uc.predicted_mean.plot(ax=ax, label='Forecast')
 ax.fill_between(pred_ci.index,
                 pred_ci.iloc[:, 0],
                 pred_ci.iloc[:, 1], color='k', alpha=.25)
 ax.set_xlabel('Date')
 ax.set_ylabel('Average Global Active Power')
-ax.set_title('RMSE {}'.format(round(np.sqrt(mse), 2)),color='red')
+#ax.set_title('RMSE {}'.format(round(np.sqrt(mse), 2)),color='red')
+plt.grid(color='gray', linestyle='--', linewidth=0.3)
 plt.legend()
-#plt.savefig('forecasts.png', dpi = 1200)
 plt.show()
+
+
+# ###### . captured energy consumption seasonality
+# ###### . confidence intervals
+
+# ###### Our model captured energy consumption seasonality.Forecast further out into the Energy Consumption,then less confident.
+# ###### This is reflected by the confidence intervals generated by our model, which grow larger as we move further out into the future.
+
+# # Conclusion and Recommendation
+
+# ###### . To change Family consumption behaviour, Creating an app connected to the Sub-meters to send report and notification about Energy consumption is recommended.
+# ###### . To reduce the cost of installing 4 Sub-meters, use one submeter with new technology to control all sections
+# ###### . It seems to be enough to use only one Sub-meter for the kitchen and the laundry room.
+# ###### . According to the amount of consumed energy in missed part, install a Sub-meter in this part is recommended 
+
+# # Thank You!
+
+
+
+
+
 
